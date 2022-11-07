@@ -42,6 +42,8 @@ const _transform = function(element: IXMLElement) {
     return element;
 };
 
+const _stripNs = function(val: string): string { return val.replace(/^[^:]+:/, "")}
+
 export interface IFileInfo
 {
     url: string;
@@ -109,7 +111,7 @@ export default class WebDAVProvider
                 clearTimeout(id);
                 return response.text();
             })
-            .then(xml => xmlTools.xml2js(xml))
+            .then(xml => xmlTools.xml2js(xml, { elementNameFn: _stripNs }))
             .then(document => _transform(document.elements[0]))
             .then(element => this.parseMultistatus(element));
     }
@@ -210,30 +212,30 @@ export default class WebDAVProvider
 
     protected parseMultistatus(element: IXMLElement): IFileInfo[]
     {
-        if (element.name !== "D:multistatus") {
+        if (element.name !== "multistatus") {
             return null;
         }
 
-        return element.elements.filter(element => element.name === "D:response")
+        return element.elements.filter(element => element.name === "response")
             .map(element => this.parseResponse(element));
     }
 
     protected parseResponse(element: IXMLElement): IFileInfo
     {
-        const propStat = element.dict["D:propstat"];
-        const prop = propStat.dict["D:prop"];
+        const propStat = element.dict["propstat"];
+        const prop = propStat.dict["prop"];
 
-        const resourceType = prop.dict["D:resourcetype"];
-        const isCollection = resourceType && resourceType.elements ? !!resourceType.dict["D:collection"] : false;
+        const resourceType = prop.dict["resourcetype"];
+        const isCollection = resourceType && resourceType.elements ? !!resourceType.dict["collection"] : false;
 
-        const contentLength = prop.dict["D:getcontentlength"];
-        const contentType = prop.dict["D:getcontenttype"];
+        const contentLength = prop.dict["getcontentlength"];
+        const contentType = prop.dict["getcontenttype"];
 
         const info: Partial<IFileInfo> = {
-            url: decodeURI(element.dict["D:href"].elements[0].text as string),
-            name: decodeURI(prop.dict["D:displayname"].elements ? prop.dict["D:displayname"].elements[0].text as string : ""),
-            created: prop.dict["D:creationdate"].elements[0].text as string,
-            modified: prop.dict["D:getlastmodified"].elements[0].text as string,
+            url: decodeURI(element.dict["href"].elements[0].text as string),
+            name: decodeURI(prop.dict["displayname"].elements ? prop.dict["displayname"].elements[0].text as string : ""),
+            created: prop.dict["creationdate"].elements[0].text as string,
+            modified: prop.dict["getlastmodified"].elements[0].text as string,
             folder: isCollection,
             size: contentLength ? contentLength.elements[0].text as number : 0,
             type: contentType ? contentType.elements[0].text as string : "",
