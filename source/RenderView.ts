@@ -13,6 +13,7 @@ import Component from "@ff/graph/Component";
 import CHierarchy from "@ff/graph/components/CHierarchy";
 
 import {
+    IKeyboardEvent as IManipKeyboardEvent,
     IManip,
     IPointerEvent as IManipPointerEvent,
     ITriggerEvent as IManipTriggerEvent
@@ -46,6 +47,7 @@ interface IBaseEvent extends IViewportBaseEvent
 
 export interface IPointerEvent extends IManipPointerEvent, IBaseEvent { }
 export interface ITriggerEvent extends IManipTriggerEvent, IBaseEvent { }
+export interface IKeyboardEvent extends IManipKeyboardEvent, IBaseEvent { }
 
 export default class RenderView extends Publisher implements IManip
 {
@@ -312,6 +314,43 @@ export default class RenderView extends Publisher implements IManip
         return false;
     }
 
+    onKeypress(event: IKeyboardEvent)
+    {
+        const system = this.system;
+        if (!system) {
+            return false;
+        }
+
+        const viewEvent = this.routeEvent(event, false, false);
+
+        if (viewEvent) {
+            const component = viewEvent.component;
+            if (component) {
+                component.emit(viewEvent);
+
+                const hierarchy = component.getComponent(CHierarchy);
+                if (!viewEvent.stopPropagation && hierarchy) {
+                    hierarchy.propagateUp(false, true, viewEvent);
+                }
+            }
+
+            if (!viewEvent.stopPropagation) {
+                this.system.emit(viewEvent);
+            }
+
+            if (!viewEvent.stopPropagation) {
+                const updated = viewEvent.viewport.onKeyboard(viewEvent);
+                if (updated) {
+                    this.system.getMainComponent(CRenderer).forceRender();
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     pickPosition(event: IPointerEvent, range?: Box3, result?: Vector3)
     {
         return this.picker.pickPosition(this.targetScene, this.targetCamera, event, range, result);
@@ -324,6 +363,7 @@ export default class RenderView extends Publisher implements IManip
 
     protected routeEvent(event: IPointerEvent, doHitTest: boolean, doPick: boolean): IPointerEvent;
     protected routeEvent(event: ITriggerEvent, doHitTest: boolean, doPick: boolean): ITriggerEvent;
+    protected routeEvent(event: IKeyboardEvent, doHitTest: boolean, doPick: boolean): IKeyboardEvent;
     protected routeEvent(event, doHitTest, doPick)
     {
         let viewport = this.targetViewport;
