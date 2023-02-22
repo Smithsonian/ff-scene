@@ -5,7 +5,7 @@
  * License: MIT
  */
 
-import { Object3D, Vector3, Matrix4, Quaternion, Euler } from "three";
+import { Object3D, Vector3, Matrix4, Quaternion, Euler, EulerOrder } from "three";
 
 import math from "@ff/core/math";
 
@@ -94,7 +94,7 @@ export default class CTransform extends CHierarchy implements ICObject3D
 
         object3D.position.fromArray(position.value);
         _vec3a.fromArray(rotation.value).multiplyScalar(math.DEG2RAD);
-        const orderName = order.getOptionText();
+        const orderName = order.getOptionText() as EulerOrder;
         object3D.rotation.setFromVector3(_vec3a, orderName);
         object3D.scale.fromArray(scale.value);
         object3D.updateMatrix();
@@ -130,7 +130,7 @@ export default class CTransform extends CHierarchy implements ICObject3D
         matrix.decompose(_vec3a, _quat, _vec3b);
         _vec3a.toArray(position.value);
 
-        const orderName = order.getOptionText();
+        const orderName = order.getOptionText() as EulerOrder;
         _euler.setFromQuaternion(_quat, orderName);
         _vec3a.setFromEuler(_euler);
         _vec3a.multiplyScalar(math.RAD2DEG).toArray(rotation.value);

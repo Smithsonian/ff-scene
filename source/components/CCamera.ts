@@ -5,7 +5,7 @@
  * License: MIT
  */
 
-import { Vector3, Euler, Quaternion } from "three";
+import { Vector3, Euler, Quaternion, EulerOrder } from "three";
 
 import { Node, types } from "@ff/graph/Component";
 
@@ -73,7 +73,8 @@ export default class CCamera extends CObject3D
 
         if (position.changed || rotation.changed) {
             camera.position.fromArray(position.value);
-            camera.rotation.fromArray(rotation.value);
+            const rot: [number, number, number, EulerOrder?] = [rotation.value[0], rotation.value[1], rotation.value[2]];
+            camera.rotation.fromArray(rot);
             camera.updateMatrix();
         }
 
@@ -116,7 +117,7 @@ export default class CCamera extends CObject3D
         matrix.decompose(_vec3a, _quat, _vec3b);
         _vec3a.toArray(position.value);
 
-        const orderName = order.getOptionText();
+        const orderName = order.getOptionText() as EulerOrder;
         _euler.setFromQuaternion(_quat, orderName);
         _vec3a.setFromEuler(_euler);
         _vec3a.multiplyScalar(math.RAD2DEG).toArray(rotation.value);
