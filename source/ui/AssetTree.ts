@@ -44,6 +44,7 @@ export default class AssetTree extends Tree<IAssetEntry>
 
         this.assetManager = this.system.components.get(CAssetManager);
         this.assetManager.on<IAssetTreeChangeEvent>("tree-change", this.onTreeChange, this);
+        this.onTreeChange({ type: "tree-change", root: this.assetManager.root });
     }
 
     protected disconnected()
@@ -105,6 +106,7 @@ export default class AssetTree extends Tree<IAssetEntry>
         // traverse base path to find root tree node
         const parts = this.path.split("/").filter(part => part !== "");
         let root = event.root;
+        if(!root) return;
 
         for (let i = 0; i < parts.length; ++i) {
             root = root.children.find(child => child.info.name === parts[i]);
