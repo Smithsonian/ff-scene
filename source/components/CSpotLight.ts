@@ -59,6 +59,9 @@ export default class CSpotLight extends CLight
             light.decay = ins.decay.value;
             light.angle = ins.angle.value * MathUtils.DEG2RAD;
             light.penumbra = ins.penumbra.value;
+
+            //SpotLightShadow doesn't handle camera.near for us, but will set camera.far and update the projection matrix
+            light.shadow.camera.near = light.distance? light.distance/800 : 0.5;
         }
 
         return true;

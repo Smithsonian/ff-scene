@@ -17,9 +17,17 @@ import { IPointerEvent } from "../RenderView";
 import CObject3D from "./CObject3D";
 import CTransform from "./CTransform";
 import CScene, { ISceneAfterRenderEvent } from "./CScene";
-import { DirectionalLight, DirectionalLightHelper } from "three";
+import { DirectionalLight, DirectionalLightHelper, HemisphereLight, HemisphereLightHelper, Object3D, PointLight, PointLightHelper, RectAreaLight, SpotLight, SpotLightHelper } from "three";
 
 ////////////////////////////////////////////////////////////////////////////////
+
+const helpers = [
+    [DirectionalLightHelper, DirectionalLight],
+    [PointLightHelper, PointLight],
+    [SpotLightHelper, SpotLight],
+    [HemisphereLightHelper, HemisphereLight],
+    [PointLightHelper, RectAreaLight],
+] as const;
 
 const _inputs = {
     viewportPicking: types.Boolean("Viewport.Picking", true),
@@ -121,11 +129,13 @@ export default class CPickSelection extends CSelection
         const renderer = event.context.renderer;
         const camera = event.context.camera;
 
-        for (let entry of this._brackets) {
-            if(entry[1] instanceof DirectionalLightHelper) {
-                entry[1].update();
+        for (let bracket of this._brackets.values()) {
+            if(helpers.some(([HelperCl])=> bracket instanceof HelperCl)){
+                bracket.update();
+                /** @bug PointLightHelper doesn't call it internally in  its update() method. */ 
+                bracket.updateWorldMatrix( true, false );
             }
-            renderer.render(entry[1] as any, camera);
+            renderer.render(bracket as any, camera);
         }
     }
 
@@ -138,14 +148,19 @@ export default class CPickSelection extends CSelection
         if (selected) {
             const object3D = component.object3D;
             if (object3D) {
-                if(object3D.children[0] instanceof DirectionalLight) {
-                    const helper = new DirectionalLightHelper( object3D.children[0], 1.0, 0xffd633 );
-                    this._brackets.set(component, helper);
+                let bracket;
+                for(let [HelperCl, Cl] of helpers){
+                    if(object3D.children[0] instanceof Cl){
+                        bracket = new HelperCl(object3D.children[0] as any, 1.0);
+                        /** @bug PointLightHelper doesn't call it internally in  its update() method. */ 
+                        bracket.updateWorldMatrix( true, false );
+                    }
                 }
-                else {
-                    const bracket = new Bracket(component.object3D);
-                    this._brackets.set(component, bracket);
+                if(!bracket){
+                    bracket = new Bracket(component.object3D);
+
                 }
+                this._brackets.set(component, bracket);
             }
         }
         else {
