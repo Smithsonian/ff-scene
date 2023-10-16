@@ -5,7 +5,7 @@
  * License: MIT
  */
 
-import { WebGLRenderer, Object3D, Camera, Scene, Box3, Vector3, sRGBEncoding } from "three";
+import { WebGLRenderer, Object3D, Camera, Scene, Box3, Vector3, sRGBEncoding, SRGBColorSpace } from "three";
 
 import Publisher from "@ff/core/Publisher";
 import System from "@ff/graph/System";
@@ -86,7 +86,7 @@ export default class RenderView extends Publisher implements IManip
         this.renderer.autoClear = false;
         //this.renderer.gammaOutput = true;
         //this.renderer.gammaFactor = 2;
-        this.renderer.outputEncoding = sRGBEncoding;
+        this.renderer.outputColorSpace = SRGBColorSpace;
 
         this.picker = new GPUPicker(this.renderer);
     }
