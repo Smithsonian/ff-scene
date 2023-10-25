@@ -5,7 +5,7 @@
  * License: MIT
  */
 
-import { WebGLRenderer, Object3D, Camera, Scene, Box3, Vector3, sRGBEncoding, SRGBColorSpace } from "three";
+import { WebGLRenderer, Object3D, Camera, Scene, Box3, Vector3, sRGBEncoding } from "three";
 
 import Publisher from "@ff/core/Publisher";
 import System from "@ff/graph/System";
@@ -86,7 +86,7 @@ export default class RenderView extends Publisher implements IManip
         this.renderer.autoClear = false;
         //this.renderer.gammaOutput = true;
         //this.renderer.gammaFactor = 2;
-        this.renderer.outputColorSpace = SRGBColorSpace;
+        this.renderer.outputEncoding = sRGBEncoding;
 
         this.picker = new GPUPicker(this.renderer);
     }
@@ -367,8 +367,8 @@ export default class RenderView extends Publisher implements IManip
     protected routeEvent(event, doHitTest, doPick)
     {
         let viewport = this.targetViewport;
-        let object3D = this.targetObject3D;
-        let component = this.targetComponent;
+        let component = this.targetComponent && this.targetComponent.node ? this.targetComponent : null;
+        let object3D = component ? this.targetObject3D : null;
 
         // if no active viewport, perform a hit test against all viewports
         if (doHitTest) {
