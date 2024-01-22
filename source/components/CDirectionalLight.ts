@@ -44,7 +44,7 @@ export default class CDirectionalLight extends CLight
         const light = this.light;
         const ins = this.ins;
 
-        if (ins.intensity.changed) {
+        if (ins.color.changed || ins.intensity.changed) {
             light.intensity = ins.intensity.value * Math.PI;  //TODO: Remove PI factor when we can support physically correct lighting units
         }
 
