@@ -52,6 +52,8 @@ export default class CPointLight extends CLight
         if (ins.distance.changed || ins.decay.changed) {
             light.distance = ins.distance.value;
             light.decay = ins.decay.value;
+            //PointLightShadow doesn't handle camera.near for us, but will set camera.far and update the projection matrix
+            light.shadow.camera.near = light.distance?light.distance/800 : 0.5;
         }
 
         light.updateMatrix();

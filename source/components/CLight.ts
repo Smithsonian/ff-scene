@@ -7,7 +7,7 @@
 
 import { Light } from "three";
 
-import { types } from "@ff/graph/propertyTypes";
+import { Node, types } from "@ff/graph/Component";
 import CObject3D from "./CObject3D";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -51,12 +51,16 @@ export default class CLight extends CObject3D
             light.intensity = ins.intensity.value;
         }
 
-        if (ins.shadowEnabled.changed || (ins.shadowEnabled.value && (
-            ins.shadowResolution.changed || ins.shadowBlur.changed))) {
+        //some lights, like ambient and hemisphere light don't have shadows
+        if("shadow" in light){
+            if (ins.shadowEnabled.changed) {
+                light.castShadow = ins.shadowEnabled.value;
+            }
 
-            light.castShadow = ins.shadowEnabled.value;
-            light.shadow.radius = ins.shadowBlur.value;
-
+            if(ins.shadowBlur.changed){
+                light.shadow.radius = ins.shadowBlur.value;
+            }
+                
             if (ins.shadowResolution.changed) {
                 const mapResolution = _mapResolution[ins.shadowResolution.getValidatedValue()];
                 light.shadow.mapSize.set(mapResolution, mapResolution);

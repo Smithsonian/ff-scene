@@ -60,6 +60,8 @@ export default class CDirectionalLight extends CLight
             const halfSize = ins.shadowSize.value * 0.5;
             camera.left = camera.bottom = -halfSize;
             camera.right = camera.top = halfSize;
+            camera.near = 0.05*ins.shadowSize.value;
+            camera.far = 50*ins.shadowSize.value;
             camera.updateProjectionMatrix();
         }
 
